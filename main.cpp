@@ -544,7 +544,7 @@ void checkKeys(void)
 
     if(!(pins & (1 << PIND3)))
     {
-        if(debounce == 2)
+        if(debounce == 1)
         {
             if(mode == BJT)
             {
@@ -606,8 +606,10 @@ void checkFreq(void)
     TIMSK1 |= (1 << TOIE1);
     TCCR0B |= (1 << CS00) ; //| (1 << CS00);
     TCCR1B |= (1 << CS10) | (1 << CS11) | (1 << CS12);	//External clock source, trigger on rising edge.
+    
     while(tim0_ovf != 39060)
         asm volatile ( "nop" );
+
     TCCR0B = 0;
     TCCR1B = 0;
     TIMSK0 &= ~(1 << TOIE0);
