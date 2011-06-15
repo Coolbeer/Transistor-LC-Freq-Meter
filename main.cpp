@@ -1,17 +1,17 @@
 /*
 
 HD44780 Connected on:
-	DB4 = PB0
-	DB5 = PB1
-	DB6 = PB2
-	DB7 = PB3
+    DB4 = PB0
+    DB5 = PB1
+    DB6 = PB2
+    DB7 = PB3
 
-	RS  = PD2
-	RW  = PD6
-	E	= PD7
+    RS  = PD2
+    RW  = PD6
+    E	= PD7
 
 Buttons:
-	PD3
+    PD3
 */
 
 #define F_CPU 10000000
@@ -88,7 +88,7 @@ uint32_t volatile freq;
 
 void init(void)
 {
-	mode = BJT;
+    mode = BJT;
     InitLCD(0);
     LCDClear();
 
@@ -96,9 +96,9 @@ void init(void)
     ADCSRA |= (1 << ADEN);
     ADCSRA |= (1 << ADPS0) | (1 << ADPS1) | (1 << ADPS2);
 
-	//Pullup Button
-	//PORTD |= (1 << PORTD3);
-	sei();
+    //Pullup Button
+    //PORTD |= (1 << PORTD3);
+    sei();
 
 }
 
@@ -309,7 +309,7 @@ void findPins(void)
     }
 //	LCDWriteIntXY(10,0, ADC, 4);
 
-    allHIZ();	
+    allHIZ();
     ADMUX = 2;
     SOURCE_2_100K;
     SINK_1_100;
@@ -325,7 +325,7 @@ void findPins(void)
     }
 //	LCDWriteIntXY(0,1, ADC, 4);
 
-    allHIZ();	
+    allHIZ();
     ADMUX = 0;
     SOURCE_0_100K;
     SINK_2_100;
@@ -341,7 +341,7 @@ void findPins(void)
     }
 //	LCDWriteIntXY(5,1, ADC, 4);
 
-    allHIZ();	
+    allHIZ();
     ADMUX = 2;
     SOURCE_2_100K;
     SINK_0_100;
@@ -357,7 +357,7 @@ void findPins(void)
     }
 //	LCDWriteIntXY(10,1, ADC, 4);
 
-    allHIZ();	
+    allHIZ();
 
     if(sightings != 0)
     {
@@ -446,7 +446,7 @@ void runTest(void)
         ADMUX = b - 1;
     }
     else
-    {	
+    {
         baseSink100k();
         collectorSource100();
         ADMUX = b - 1;
@@ -467,7 +467,7 @@ void runTest(void)
         LCDWriteStringXY(0,0, "EB=");
         LCDWriteStringXY(8,1, " PNP/");
     }
-        
+
     LCDWriteIntXY(3, 0, (uint32_t)5000000 / (uint32_t)(1024000/be), 3);
     LCDWriteString("mV");
 
@@ -531,89 +531,89 @@ void runTest(void)
 void printMes()
 {
     LCDWriteStringXY(0,0, "Please          ");
-	if(mode == BJT)
-	{
-    	LCDWriteStringXY(0,1, "Insert BJT      ");
-	}
+    if(mode == BJT)
+    {
+        LCDWriteStringXY(0,1, "Insert BJT      ");
+    }
 }
 
 void checkKeys(void)
 {
-	uint8_t volatile pins = PIND;
-	uint8_t volatile static debounce;
+    uint8_t volatile pins = PIND;
+    uint8_t volatile static debounce;
 
-	if(!(pins & (1 << PIND3)))
-	{
-		if(debounce == 2)
-		{
-			if(mode == BJT)
-			{
-				mode = FREQ;
-			}
-			else if(mode == FREQ)
-			{
-				mode = BJT;
-			}
-			++debounce;
-		}
-		else if(debounce < 10)
-			++debounce;
-	}
-	else
-		debounce = 0;
+    if(!(pins & (1 << PIND3)))
+    {
+        if(debounce == 2)
+        {
+            if(mode == BJT)
+            {
+                mode = FREQ;
+            }
+            else if(mode == FREQ)
+            {
+                mode = BJT;
+            }
+            ++debounce;
+        }
+        else if(debounce < 10)
+            ++debounce;
+    }
+    else
+        debounce = 0;
 
 }
 
 char returnCharNumber(uint8_t number)
 {
-	const char numbers[] = { '0','1','2','3','4','5','6','7','8','9'};
-	return numbers[number];
+    const char numbers[] = { '0','1','2','3','4','5','6','7','8','9'};
+    return numbers[number];
 }
 
 void SpaceNumber(uint32_t number, char *returnValue)
 {
-	uint32_t divisor = 10000000;
-	uint8_t numCount = 9;
-	for(uint8_t teller = 0; teller != 10; ++teller)
-	{
-		if(teller == 2 || teller == 6)
-			continue;
-		returnValue[teller] = returnCharNumber(number / divisor);
-		if(returnValue[teller] == '0')
-		{
-			if(numCount == 9)
-			{
-				returnValue[teller] = ' ';
-			}
-		}
-		else
-			numCount = 8;
-		number = number % divisor;
-		divisor /= 10;
-	}
+    uint32_t divisor = 10000000;
+    uint8_t numCount = 9;
+    for(uint8_t teller = 0; teller != 10; ++teller)
+    {
+        if(teller == 2 || teller == 6)
+            continue;
+        returnValue[teller] = returnCharNumber(number / divisor);
+        if(returnValue[teller] == '0')
+        {
+            if(numCount == 9)
+            {
+                returnValue[teller] = ' ';
+            }
+        }
+        else
+            numCount = 8;
+        number = number % divisor;
+        divisor /= 10;
+    }
 }
 
 void checkFreq(void)
 {
-	char tmpp[14] = { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','H','z','\0'};
-	LCDWriteStringXY(0,0, "Frequency:      ");
-	tim0_ovf = 0;
-	tim1_ovf = 0;
-	freq = 1;
-	TCNT1 = 0;
-	TCNT0 = 0;
-	TIMSK0 |= (1 << TOIE0);
-	TIMSK1 |= (1 << TOIE1);
-	TCCR0B |= (1 << CS00) ; //| (1 << CS00);
-	TCCR1B |= (1 << CS10) | (1 << CS11) | (1 << CS12);	//External clock source, trigger on rising edge.
-	while(tim0_ovf != 39060)
-		asm volatile ( "nop" );
-	TCCR0B = 0;
-	TCCR1B = 0;
-	TIMSK0 &= ~(1 << TOIE0);
-	freq = ((uint32_t)tim1_ovf << 16) + TCNT1;;
-	SpaceNumber(freq, tmpp);
-	LCDWriteStringXY(0,1, tmpp);
+    char tmpp[14] = { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','H','z','\0'};
+    LCDWriteStringXY(0,0, "Frequency:      ");
+    tim0_ovf = 0;
+    tim1_ovf = 0;
+    freq = 1;
+    TCNT1 = 0;
+    TCNT0 = 0;
+    TIMSK0 |= (1 << TOIE0);
+    TIMSK1 |= (1 << TOIE1);
+    TCCR0B |= (1 << CS00) ; //| (1 << CS00);
+    TCCR1B |= (1 << CS10) | (1 << CS11) | (1 << CS12);	//External clock source, trigger on rising edge.
+    while(tim0_ovf != 39060)
+        asm volatile ( "nop" );
+    TCCR0B = 0;
+    TCCR1B = 0;
+    TIMSK0 &= ~(1 << TOIE0);
+    freq = ((uint32_t)tim1_ovf << 16) + TCNT1;;
+    SpaceNumber(freq, tmpp);
+    LCDWriteStringXY(0,1, tmpp);
 }
 
 int main(void)
@@ -624,21 +624,21 @@ int main(void)
 
     while(1)
     {
-		if(mode == BJT)
-		{
-        	findPins();
-        	if(haveTrans)
-            	runTest();
-	    	else
-            	printMes();
-		}
-		else if(mode == FREQ)
-		{
-			checkFreq();
-			if(freq == 0)
-           		printMes();
-		}
-		checkKeys();
+        if(mode == BJT)
+        {
+            findPins();
+            if(haveTrans)
+                runTest();
+            else
+                printMes();
+        }
+        else if(mode == FREQ)
+        {
+            checkFreq();
+            if(freq == 0)
+                printMes();
+        }
+        checkKeys();
     }
     return 0;
 }
@@ -646,10 +646,10 @@ int main(void)
 
 ISR(TIMER0_OVF_vect)
 {
-	++tim0_ovf;
+    ++tim0_ovf;
 }
 
 ISR(TIMER1_OVF_vect)
 {
-	++tim1_ovf;
+    ++tim1_ovf;
 }
