@@ -83,14 +83,15 @@ uint16_t volatile tim1_ovf;
 uint8_t volatile mode;
 uint32_t volatile freq;
 
+t_lcd lcd;
+
 #define BJT 1
 #define FREQ 2
 
 void init(void)
 {
     mode = BJT;
-    InitLCD(0);
-    LCDClear();
+	lcd.init();
 
     //Init ADC
     ADCSRA |= (1 << ADEN);
@@ -275,7 +276,7 @@ void findPins(void)
         data[0] = 1;
         data[1] = 2;
     }
-//	LCDWriteIntXY(0,0, ADC, 4);
+//	lcd.writeIntXY(0,0, ADC, 4);
 
     allHIZ();
     ADMUX = 1;
@@ -291,7 +292,7 @@ void findPins(void)
         data[sightings*2+1] = 1;
         ++sightings;
     }
-//	LCDWriteIntXY(5,0, ADC, 4);
+//	lcd.writeIntXY(5,0, ADC, 4);
 
     allHIZ();
     ADMUX = 1;
@@ -307,7 +308,7 @@ void findPins(void)
         data[sightings*2+1] = 3;
         ++sightings;
     }
-//	LCDWriteIntXY(10,0, ADC, 4);
+//	lcd.writeIntXY(10,0, ADC, 4);
 
     allHIZ();
     ADMUX = 2;
@@ -323,7 +324,7 @@ void findPins(void)
         data[sightings*2+1] = 2;
         ++sightings;
     }
-//	LCDWriteIntXY(0,1, ADC, 4);
+//	lcd.writeIntXY(0,1, ADC, 4);
 
     allHIZ();
     ADMUX = 0;
@@ -339,7 +340,7 @@ void findPins(void)
         data[sightings*2+1] = 3;
         ++sightings;
     }
-//	LCDWriteIntXY(5,1, ADC, 4);
+//	lcd.writeIntXY(5,1, ADC, 4);
 
     allHIZ();
     ADMUX = 2;
@@ -355,7 +356,7 @@ void findPins(void)
         data[sightings*2+1] = 1;
         ++sightings;
     }
-//	LCDWriteIntXY(10,1, ADC, 4);
+//	lcd.writeIntXY(10,1, ADC, 4);
 
     allHIZ();
 
@@ -459,81 +460,83 @@ void runTest(void)
 
     if(isNPN)
     {
-        LCDWriteStringXY(0,0, "BE=");
-        LCDWriteStringXY(8,1, " NPN/");
+		lcd.sendStringXY(0,0, (char*)"BE=");
+		lcd.sendStringXY(8,1, (char*)" NPN/");
+
     }
     else
     {
-        LCDWriteStringXY(0,0, "EB=");
-        LCDWriteStringXY(8,1, " PNP/");
+		lcd.sendStringXY(0,0, (char*)"EB=");
+		lcd.sendStringXY(8,1, (char*)" PNP/");
+
     }
 
-    LCDWriteIntXY(3, 0, (uint32_t)5000000 / (uint32_t)(1024000/be), 3);
-    LCDWriteString("mV");
+	lcd.writeIntXY(3, 0, (uint32_t)5000000 / (uint32_t)(1024000/be), 3);
+	lcd.sendString((char*)"mV");
 
     if(isNPN)
     {
-        LCDWriteStringXY(0,1, "BC=");
+		lcd.sendStringXY(0,1, (char*)"BC=");
     }
     else
     {
-        LCDWriteStringXY(0,1, "CB=");
+		lcd.sendStringXY(0,1, (char*)"CB=");
     }
-    LCDWriteIntXY(3, 1, (uint32_t)5000000 / (uint32_t)(1024000/bc), 3);
-    LCDWriteString("mV");
+	lcd.writeIntXY(3, 1, (uint32_t)5000000 / (uint32_t)(1024000/bc), 3);
 
-    LCDWriteStringXY(8,0, " hFE=");
-    LCDWriteIntXY(13, 0, hFE, 3);
+    lcd.sendString((char*)"mV");
 
-    LCDGotoXY(13,1);
+    lcd.sendStringXY(8,0, (char*)" hFE=");
+    lcd.writeIntXY(13, 0, hFE, 3);
+
+    lcd.gotoXY(13,1);
     if(b == 1)
     {
-        LCDWriteString("B");
+        lcd.sendString((char*)"B");
     }
     else if(c == 1)
     {
-        LCDWriteString("C");
+        lcd.sendString((char*)"C");
     }
     else if(e == 1)
     {
-        LCDWriteString("E");
+        lcd.sendString((char*)"E");
     }
 
     if(b == 2)
     {
-        LCDWriteString("B");
+        lcd.sendString((char*)"B");
     }
     else if(c == 2)
     {
-        LCDWriteString("C");
+        lcd.sendString((char*)"C");
     }
     else if(e == 2)
     {
-        LCDWriteString("E");
+        lcd.sendString((char*)"E");
     }
 
     if(b == 3)
     {
-        LCDWriteString("B");
+        lcd.sendString((char*)"B");
     }
     else if(c == 3)
     {
-        LCDWriteString("C");
+        lcd.sendString((char*)"C");
     }
     else if(e == 3)
     {
-        LCDWriteString("E");
+        lcd.sendString((char*)"E");
     }
-
 }
 
 
 void printMes()
 {
-    LCDWriteStringXY(0,0, "Please          ");
+    lcd.sendStringXY(0,0, (char*)"Please          ");
     if(mode == BJT)
     {
-        LCDWriteStringXY(0,1, "Insert BJT      ");
+        lcd.sendStringXY(0,1, (char*)"Insert BJT      ");
     }
 }
 
@@ -596,7 +599,7 @@ void SpaceNumber(uint32_t number, char *returnValue)
 void checkFreq(void)
 {
     char tmpp[14] = { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','H','z','\0'};
-    LCDWriteStringXY(0,0, "Frequency:      ");
+    lcd.sendStringXY(0,0, (char*)"Frequency:      ");
     tim0_ovf = 0;
     tim1_ovf = 0;
     freq = 1;
@@ -615,7 +618,7 @@ void checkFreq(void)
     TIMSK0 &= ~(1 << TOIE0);
     freq = ((uint32_t)tim1_ovf << 16) + TCNT1;;
     SpaceNumber(freq, tmpp);
-    LCDWriteStringXY(0,1, tmpp);
+    lcd.sendStringXY(0,1, tmpp);
 }
 
 int main(void)
