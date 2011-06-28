@@ -460,83 +460,83 @@ void runTest(void)
 
     if(isNPN)
     {
-		lcd.sendStringXY(0,0, (char*)"BE=");
-		lcd.sendStringXY(8,1, (char*)" NPN/");
+		lcd.writeStringXY(0,0, (char*)"BE=");
+		lcd.writeStringXY(8,1, (char*)" NPN/");
 
     }
     else
     {
-		lcd.sendStringXY(0,0, (char*)"EB=");
-		lcd.sendStringXY(8,1, (char*)" PNP/");
+		lcd.writeStringXY(0,0, (char*)"EB=");
+		lcd.writeStringXY(8,1, (char*)" PNP/");
 
     }
 
 	lcd.writeIntXY(3, 0, (uint32_t)5000000 / (uint32_t)(1024000/be), 3);
-	lcd.sendString((char*)"mV");
+	lcd.writeString((char*)"mV");
 
     if(isNPN)
     {
-		lcd.sendStringXY(0,1, (char*)"BC=");
+		lcd.writeStringXY(0,1, (char*)"BC=");
     }
     else
     {
-		lcd.sendStringXY(0,1, (char*)"CB=");
+		lcd.writeStringXY(0,1, (char*)"CB=");
     }
 	lcd.writeIntXY(3, 1, (uint32_t)5000000 / (uint32_t)(1024000/bc), 3);
 
-    lcd.sendString((char*)"mV");
+    lcd.writeString((char*)"mV");
 
-    lcd.sendStringXY(8,0, (char*)" hFE=");
+    lcd.writeStringXY(8,0, (char*)" hFE=");
     lcd.writeIntXY(13, 0, hFE, 3);
 
     lcd.gotoXY(13,1);
     if(b == 1)
     {
-        lcd.sendString((char*)"B");
+        lcd.writeString((char*)"B");
     }
     else if(c == 1)
     {
-        lcd.sendString((char*)"C");
+        lcd.writeString((char*)"C");
     }
     else if(e == 1)
     {
-        lcd.sendString((char*)"E");
+        lcd.writeString((char*)"E");
     }
 
     if(b == 2)
     {
-        lcd.sendString((char*)"B");
+        lcd.writeString((char*)"B");
     }
     else if(c == 2)
     {
-        lcd.sendString((char*)"C");
+        lcd.writeString((char*)"C");
     }
     else if(e == 2)
     {
-        lcd.sendString((char*)"E");
+        lcd.writeString((char*)"E");
     }
 
     if(b == 3)
     {
-        lcd.sendString((char*)"B");
+        lcd.writeString((char*)"B");
     }
     else if(c == 3)
     {
-        lcd.sendString((char*)"C");
+        lcd.writeString((char*)"C");
     }
     else if(e == 3)
     {
-        lcd.sendString((char*)"E");
+        lcd.writeString((char*)"E");
     }
 }
 
 
 void printMes()
 {
-    lcd.sendStringXY(0,0, (char*)"Please          ");
+    lcd.writeStringXY(0,0, (char*)"Please          ");
     if(mode == BJT)
     {
-        lcd.sendStringXY(0,1, (char*)"Insert BJT      ");
+        lcd.writeStringXY(0,1, (char*)"Insert BJT      ");
     }
 }
 
@@ -599,7 +599,7 @@ void SpaceNumber(uint32_t number, char *returnValue)
 void checkFreq(void)
 {
     char tmpp[14] = { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','H','z','\0'};
-    lcd.sendStringXY(0,0, (char*)"Frequency:      ");
+    lcd.writeStringXY(0,0, (char*)"Frequency:      ");
     tim0_ovf = 0;
     tim1_ovf = 0;
     freq = 1;
@@ -618,7 +618,7 @@ void checkFreq(void)
     TIMSK0 &= ~(1 << TOIE0);
     freq = ((uint32_t)tim1_ovf << 16) + TCNT1;;
     SpaceNumber(freq, tmpp);
-    lcd.sendStringXY(0,1, tmpp);
+    lcd.writeStringXY(0,1, tmpp);
 }
 
 int main(void)

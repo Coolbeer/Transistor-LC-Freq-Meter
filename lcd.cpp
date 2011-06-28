@@ -2,7 +2,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-void t_lcd::init(void)
+void t_lcd::init(initFlags flags)
 {
 	//Set the ports as output
 	DDR(RS_PORT)	|= (1 << DD(RS_PORT, RS_PIN));
@@ -13,6 +13,7 @@ void t_lcd::init(void)
 	DDR(DB6_PORT)	|= (1 << DD(DB6_PORT, DB6_PIN));
 	DDR(DB7_PORT)	|= (1 << DD(DB7_PORT, DB7_PIN));
 
+	//Make sure all pins are low
 	CLEARPIN(RS_PORT,  RS_PIN);
 	CLEARPIN(E_PORT,   E_PIN);
 	CLEARPIN(RW_PORT,  RW_PIN);
@@ -23,34 +24,52 @@ void t_lcd::init(void)
 
 	_delay_ms(40);
 
-	SETPIN(E_PORT, E_PIN);
 	setDBPort(0x3); //0b0011
 
 	_delay_ms(5);
-	CLEARPIN(E_PORT, E_PIN);
 
-	_delay_ms(1);
 	SETPIN(E_PORT, E_PIN);
-
 	_delay_ms(1);
 	CLEARPIN(E_PORT, E_PIN);
 
 	SETPIN(E_PORT, E_PIN);
+	_delay_ms(1);
+	CLEARPIN(E_PORT, E_PIN);
 
 	_delay_ms(1);
-
-	CLEARPIN(E_PORT, E_PIN);
 
 	setDBPort(0x2);
+
 	_delay_ms(1);
+
 	waitBusy();
 	
-	sendCmd(0x22);
+	sendCmd(0x20 | flags);
 
-	sendCmd(0x01);
+	clearDisplay();
 	sendCmd(0x06);
 
-	sendCmd(0x0C);
+	setDisplayFlags();
+}
+
+void t_lcd::displayShift(shiftFlags flags)
+{
+	sendCmd(0x10 | 0x08 | flags);
+}
+
+void t_lcd::clearDisplay(void)
+{
+	sendCmd(0x01);
+}
+
+void t_lcd::returnHome(void)
+{
+	sendCmd(0x02);
+}
+
+void t_lcd::setDisplayFlags(displayFlags flags)
+{
+	sendCmd(0x08 | flags);
 }
 
 void t_lcd::waitBusy(void)
@@ -65,7 +84,7 @@ void t_lcd::waitBusy(void)
 	CLEARPIN(RW_PORT, RW_PIN);
 }
 
-void t_lcd::sendString(char *data)
+void t_lcd::writeString(char *data)
 {
 	uint8_t cnt = 0;
 	while(data[cnt] != '\0')
@@ -84,10 +103,10 @@ void t_lcd::gotoXY(uint8_t x, uint8_t y)
 	sendCmd(gotoCMD);
 }
 
-void t_lcd::sendStringXY(uint8_t x, uint8_t y, char *data)
+void t_lcd::writeStringXY(uint8_t x, uint8_t y, char *data)
 {
 	gotoXY(x,y);
-	sendString(data);
+	writeString(data);
 }
 
 void t_lcd::writeInt(uint32_t value, uint8_t padding)
@@ -119,6 +138,8 @@ void t_lcd::writeIntXY(uint8_t x, uint8_t y, uint32_t value, uint8_t padding)
 
 void t_lcd::setDBPort(uint8_t bits)
 {
+	SETPIN(E_PORT, E_PIN);
+
 	if(bits & (1 << 0))
 		SETPIN(DB4_PORT, DB4_PIN);
 	else
@@ -138,9 +159,13 @@ void t_lcd::setDBPort(uint8_t bits)
 		SETPIN(DB7_PORT, DB7_PIN);
 	else
 		CLEARPIN(DB7_PORT, DB7_PIN);
+
+	_delay_us(1);
+
+	CLEARPIN(E_PORT, E_PIN);
 }
 
-void t_lcd::sendByte(uint8_t data, bool type)
+void t_lcd::writeByte(uint8_t data, bool type)
 {
 	uint8_t tmpData;
 	if(type)
@@ -151,15 +176,7 @@ void t_lcd::sendByte(uint8_t data, bool type)
 	tmpData = data >> 4;
 	for(uint8_t teller = 0; teller != 2; ++teller)
 	{
-		_delay_us(1);
-		SETPIN(E_PORT, E_PIN);
-
 		setDBPort(tmpData);
-		
-		_delay_us(1);
-
-		CLEARPIN(E_PORT, E_PIN);
-
 		tmpData = data;
 	}
 	_delay_ms(1);
